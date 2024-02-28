@@ -1,11 +1,6 @@
 package GeneticAlgorithm;
 
-import Data.GeneticData;
-import Entity.Individual;
-import MyThread.BlockingBuffer;
-import MyThread.GenerateThread;
-import MyThread.InitializationThread;
-import ObjectiveFunction.FitnessCalculator;
+
 import com.opencsv.exceptions.CsvValidationException;
 
 import java.io.FileInputStream;
@@ -16,6 +11,12 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
+import myThread.BlockingBuffer;
+import myThread.FitnessCalculateThread;
+import myThread.GenerateThread;
+import myThread.InitializationThread;
+import utils.GeneticData;
+import utils.Individual;
 
 public class Framework {
 
@@ -29,7 +30,7 @@ public class Framework {
     private int generateThreadNum;
     private ArrayList<Individual> population;
     private GeneticData geneticData;
-    private FitnessCalculator fitnessCalculator;
+    Random rand = new Random();
 
     public Framework(String configPath) throws IOException, FileNotFoundException, CsvValidationException {
 
@@ -40,7 +41,6 @@ public class Framework {
         geneticData = new GeneticData();
         geneticData.loadData();
         //generate fitnessCalculator
-        fitnessCalculator = new FitnessCalculator(geneticData);
 
         //initialize population
         population = new ArrayList<>();
@@ -62,8 +62,9 @@ public class Framework {
         //For each generation
         for (int i = 0; i < loops; i++) {
             //Selection
+
             int numElite = selection(newPopulation);
-            int numGenerate = numPopulation - numElite;
+            int numGenerate = (numPopulation - numElite) / 2;
             //Generate
             generate(newPopulation, numGenerate);
 
@@ -89,17 +90,64 @@ public class Framework {
             System.out.println();
         }
         String filePath = "data/output.txt";
-        bestSolution.writeChromosomeToFile(filePath, bestSolution.chromosome);
+        bestSolution.writeChromosomeToFile(filePath, bestSolution.getChromosome());
     }
 
+//    public void calcuateFitness() {
+//        population.stream().forEach(i -> i.setFitness(fitnessCalculator.calculateFitess(i.getChromosome())));
+//    }
     public void calcuateFitness() {
-        population.stream().forEach(i -> i.setFitness(fitnessCalculator.calculateFitess(i.getChromosome())));
+        ExecutorService executorService = Executors.newFixedThreadPool(initializationThreadNum);
+
+        //initialize population
+        for (int i = 0; i < numPopulation; i++) {
+            //generate thread
+            Runnable thread = new FitnessCalculateThread(population.get(i));
+
+            executorService.execute(thread);
+        }
+
+        //shutdown thread
+        executorService.shutdown();
+
+        while (!executorService.isTerminated()) {
+
+        }
+
+        System.out.println("Finish calculation phase");
     }
 
     private int selection(BlockingBuffer newPopulation) throws InterruptedException {
 
         int eliteNumber = numPopulation / elitePer;
-
+        Collections.sort(population);
+        ArrayList<Individual> topDifElite = new ArrayList<>();
+        int count = 0;
+        if (topDifElite.isEmpty()) {
+            topDifElite.add(population.get(0));
+            count += 1;
+        }
+        for (int i = 1; i < population.size(); i++) {
+            float fitness = population.get(i).getFitness();
+            boolean flag = false;
+            for (Individual indi : topDifElite) {
+                if (indi.getFitness() == fitness) {
+                    flag = true;
+                }
+            }
+            if (flag == false) {
+                topDifElite.add(population.get(i));
+                count += 1;
+            }
+            if (count >= eliteNumber) {
+                break;
+            }
+        }
+        while (count < eliteNumber) {
+            int index = rand.nextInt(eliteNumber);
+            topDifElite.add(population.get(index));
+            count += 1;
+        }
         for (int i = 0; i < eliteNumber; i++) {
             newPopulation.push(population.get(i));
         }
@@ -147,11 +195,9 @@ public class Framework {
 
         //shutdown thread
         executorService.shutdown();
-
         while (!executorService.isTerminated()) {
 
         }
-
         System.out.println("Finish generate phase");
 
         population.clear();

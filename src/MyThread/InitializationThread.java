@@ -1,7 +1,8 @@
-package MyThread;
+package myThread;
 
-import Data.GeneticData;
-import Entity.Individual;
+import utils.GeneticData;
+import utils.Individual;
+
 
 public class InitializationThread implements Runnable{
 
@@ -32,9 +33,8 @@ public class InitializationThread implements Runnable{
     
 
     private Individual generateIndividual(){
-        Individual newIndividual = new Individual();
-        newIndividual.setData(geneticData);
-        newIndividual.setChromosome(newIndividual.createChromosome());
+        Individual newIndividual = new Individual(geneticData);
+        newIndividual.createChromosome();
 //        System.out.println("Create new Individual");
 
         return newIndividual;

@@ -2,18 +2,18 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package Entity;
+package entity;
 
 /**
  *
  * @author Admin
  */
 public class Student {
-    public int studentId;
-    public String rollNumber;
-    public String memberCode;
-    public String email;
-    public String fullName;
+    private int studentId;
+    private String rollNumber;
+    private String memberCode;
+    private String email;
+    private String fullName;
 
     public Student(int studentId, String rollNumber, String memberCode, String email, String fullName) {
         this.studentId = studentId;

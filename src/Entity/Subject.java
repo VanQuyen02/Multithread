@@ -2,16 +2,16 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package Entity;
+package entity;
 
 /**
  *
  * @author Admin
  */
 public class Subject {
-    public int id;
-    public String subjectCode;
-    public int examDuration; // Converted to represent exam duration in terms of 90-minute blocks
+    private int id;
+    private String subjectCode;
+    private int examDuration; // Converted to represent exam duration in terms of 90-minute blocks
 
     public Subject(int subjectId, String subjectCode, int examDuration) {
         this.id = subjectId;

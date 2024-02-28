@@ -1,4 +1,4 @@
-package MyThread;
+package myThread;
 
 import java.util.Collection;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -53,7 +53,7 @@ public class BlockingBuffer {
         return null;
     }
 
-    public <T> T getFirst() throws InterruptedException {
+    public <T> T getFirst(int i) throws InterruptedException {
         if (mQueues.size() > 0){
             return (T) mQueues.getFirst();
         }
