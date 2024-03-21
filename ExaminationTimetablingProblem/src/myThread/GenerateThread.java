@@ -40,7 +40,7 @@ public class GenerateThread implements Runnable {
         children1 = parent1.clone();
         children2 = parent2.clone();
         children.add(children1);
-        children.add(children2);
+//        children.add(children2);
     }
 
     private void crossover() {
@@ -51,21 +51,6 @@ public class GenerateThread implements Runnable {
         }
     }
 
-//    private void crossover1() {
-//        for (int s = 0; s < data.getNumberOfSubjects(); s++) {
-//            if (rand.nextDouble() < 0.5) {
-//                swapTwoGenOnlyInvi(children1, children2, s, data.getLengthOfSubject()[s]);
-//            }
-//        }
-//    }
-//
-//    private void swapTwoGenOnlyInvi(Individual c1, Individual c2, int s, int sLength) {
-//        for (int t = 0; t < data.getNumberOfTotalSlots(); t++) {
-//            int[] temp = c1.getChromosome()[s][t];
-//            c1.getChromosome()[s][t] = c2.getChromosome()[s][t];
-//            c2.getChromosome()[s][t] = temp;
-//        }
-//    }
     private void swapTwoGen(Individual c1, Individual c2, int s, int sLength) {
         swapTwoGen(c1.getChromosome(), c2.getChromosome(), s, sLength, c1.getSubjectHeldAtSlot(), c1.getSlotStartOfSubject(), c2.getSubjectHeldAtSlot(), c2.getSlotStartOfSubject());
     }
@@ -89,12 +74,22 @@ public class GenerateThread implements Runnable {
 
     private void mutation() {
         mutationElement(children1);
-        mutationElement(children2);
+//        mutationElement(children2);
     }
 
     private void mutation1() {
         mutationElement1(children1);
-        mutationElement1(children2);
+//        mutationElement1(children2);
+    }
+
+    private void mutation2() {
+        mutationElement2(children1);
+//        mutationElement2(children2);
+    }
+
+    private void mutation3() {
+        mutationElement3(children1);
+//        mutationElement3(children2);
     }
 
     private void mutationElement(Individual ind) {
@@ -105,16 +100,85 @@ public class GenerateThread implements Runnable {
         }
         int lengthS1 = data.getLengthOfSubject()[subjectIndex1];
         int lengthS2 = data.getLengthOfSubject()[subjectIndex2];
-//        if (rand.nextDouble() > 0.5) {
         swapTimeslotOfTwoSubject(ind.getChromosome(), subjectIndex1, subjectIndex2, ind.getSubjectHeldAtSlot(), ind.getSlotStartOfSubject(), lengthS1, lengthS2);
-//        } else {
-//            swapTwoInvi(ind.getChromosome(), subjectIndex1, subjectIndex2, ind.getSubjectHeldAtSlot(), ind.getSlotStartOfSubject(), lengthS1, lengthS2);
-//        }
     }
 
     private void mutationElement1(Individual ind) {
         int random_subject = rand.nextInt(data.getNumberOfSubjects());
+        changeInvi(ind, random_subject);
+    }
+
+    private void mutationElement2(Individual ind) {
+        int subjectIndex1 = rand.nextInt(data.getNumberOfSubjects());
+        int subjectIndex2 = rand.nextInt(data.getNumberOfSubjects());
+        while (subjectIndex1 == subjectIndex2) {
+            subjectIndex2 = rand.nextInt(data.getNumberOfSubjects());
+        }
+        int lengthS1 = data.getLengthOfSubject()[subjectIndex1];
+        int lengthS2 = data.getLengthOfSubject()[subjectIndex2];
+        swapTwoInvi(ind.getChromosome(), subjectIndex1, subjectIndex2, ind.getSubjectHeldAtSlot(), ind.getSlotStartOfSubject(), lengthS1, lengthS2);
+    }
+
+    private void mutationElement3(Individual ind) {
+        int random_subject = rand.nextInt(data.getNumberOfSubjects());
         changeSubject(ind, random_subject);
+    }
+
+    private void changeInvi(Individual indi, int random_subject) {
+        int[][] subjectHeldAtSlot = indi.getSubjectHeldAtSlot();
+        int[] subjectStartdAtSlot = indi.getSlotStartOfSubject();
+        int slotStart = subjectStartdAtSlot[random_subject];
+        int lengthS = indi.getData().getLengthOfSubject()[random_subject];
+
+        // Change slot of subject
+//        int newSlotStart;
+//        while (true) {
+//            newSlotStart = rand.nextInt(indi.getData().getNumberOfTotalSlots() - lengthS);
+//            if (newSlotStart != slotStart) {
+//                break;
+//            }
+//        }
+        List<Integer> invi = new ArrayList<>();
+        for (int t = slotStart; t < slotStart + lengthS; t++) {
+            for (int i = 0; i < data.getNumberOfInvigilators(); i++) {
+                if (indi.getChromosome()[random_subject][t][i] == 1) {
+//                    indi.getChromosome()[random_subject][t][i] = 0;
+                    invi.add(i);
+                }
+            }
+        }
+        // Convert List to Set
+        Set<Integer> set = new HashSet<>(invi);
+        // Convert Set to List
+        invi = new ArrayList<>(set);
+//        for (int t = newSlotStart; t < newSlotStart + lengthS; t++) {
+//            for (int index = 0; index < invi.size(); index++) {
+//                indi.getChromosome()[random_subject][t][invi.get(index)] = 1;
+//            }
+//        }
+//        for (int t = slotStart; t < slotStart + lengthS; t++) {
+//            subjectHeldAtSlot[random_subject][t] = 0;
+//        }
+//        for (int t = newSlotStart; t < newSlotStart + lengthS; t++) {
+//            subjectHeldAtSlot[random_subject][t] = 1;
+//        }
+//        subjectStartdAtSlot[random_subject] = newSlotStart;
+//        indi.setSlotStartOfSubject(subjectStartdAtSlot);
+//        indi.setSubjectHeldAtSlot(subjectHeldAtSlot);
+        // Change Invi
+        int newInvi;
+        while (true) {
+            newInvi = rand.nextInt(indi.getData().getNumberOfInvigilators());
+            if (!invi.contains(newInvi) & indi.getData().getSubjectCanBeSuperviseInvigilator()[random_subject][newInvi] == 1) {
+                break;
+            }
+        }
+        int random_invigilator_index = rand.nextInt(invi.size());
+        int random_invigilator = invi.get(random_invigilator_index);
+        for (int t = slotStart; t < slotStart + lengthS; t++) {
+            indi.getChromosome()[random_subject][t][newInvi] = 1;
+            indi.getChromosome()[random_subject][t][random_invigilator] = 0;
+        }
     }
 
     private void changeSubject(Individual indi, int random_subject) {
@@ -126,7 +190,7 @@ public class GenerateThread implements Runnable {
         // Change slot of subject
         int newSlotStart;
         while (true) {
-            newSlotStart = rand.nextInt(indi.getData().getNumberOfTotalSlots() - lengthS);
+            newSlotStart = rand.nextInt(indi.getData().getNumberOfTotalSlots() - lengthS + 1);
             if (newSlotStart != slotStart) {
                 break;
             }
@@ -158,20 +222,6 @@ public class GenerateThread implements Runnable {
         subjectStartdAtSlot[random_subject] = newSlotStart;
         indi.setSlotStartOfSubject(subjectStartdAtSlot);
         indi.setSubjectHeldAtSlot(subjectHeldAtSlot);
-        // Change Invi
-        int newInvi;
-        while (true) {
-            newInvi = rand.nextInt(indi.getData().getNumberOfInvigilators());
-            if (!invi.contains(newInvi) & indi.getData().getSubjectCanBeSuperviseInvigilator()[random_subject][newInvi] == 1) {
-                break;
-            }
-        }
-        int random_invigilator_index = rand.nextInt(invi.size());
-        int random_invigilator = invi.get(random_invigilator_index);
-        for (int t = newSlotStart; t < newSlotStart + lengthS; t++) {
-            indi.getChromosome()[random_subject][t][newInvi] = 1;
-            indi.getChromosome()[random_subject][t][random_invigilator] = 0;
-        }
     }
 
     private void swapTwoInvi(int[][][] mutatedChromosome, int subjectIndex1, int subjectIndex2, int[][] subjectHeldAtSlot, int[] slotStartOfSubject, int lengthS1, int lengthS2) {
@@ -263,16 +313,26 @@ public class GenerateThread implements Runnable {
 
     @Override
     public void run() {
+//        if (generation < 1000) {
+//            crossoverRate = 0.8;
+//            mutationRate = 0.4;
+//        } else {
+//            crossoverRate = 0.4;
+//            mutationRate = 0.8;
+//        }
         //crossover
         if (Math.random() < crossoverRate) {
             crossover();
         }
         //mutation
         if (Math.random() < mutationRate) {
-            if (this.generation < 3500) {
-                mutation();
-            } else {
+            double p = Math.random();
+            if (p < 0.5) {
                 mutation1();
+                mutation3();
+            } else {
+                mutation();
+                mutation2();
             }
         }
         children.stream().forEach(i -> {

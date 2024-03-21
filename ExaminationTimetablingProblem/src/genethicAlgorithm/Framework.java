@@ -16,6 +16,8 @@ import myThread.GenerateThread;
 import myThread.InitializationThread;
 import dataInput.GeneticData;
 import entities.Individual;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 
 public class Framework {
 
@@ -52,12 +54,8 @@ public class Framework {
 
         //Calculate fitness
         calcuateFitness();
-
-        for (int k = 0; k < 10; k++) {
-            System.out.println(population.get(k).getFitness());
-        }
-        System.out.println();
         double bestFitness = Double.POSITIVE_INFINITY;
+        ArrayList<Double> bestResult = new ArrayList<>();
         int currentConvect = 0;
         Individual bestSolution = null;
 
@@ -71,7 +69,7 @@ public class Framework {
             //Selection
 
             int numElite = selection(newPopulation);
-            int numGenerate = (numPopulation - numElite) / 2;
+            int numGenerate = (numPopulation - numElite);
             //Generate
             generate(newPopulation, numGenerate, i);
 
@@ -91,13 +89,25 @@ public class Framework {
                 }
             }
             System.out.println(String.format("Generation %d best fitness: %f", i, bestFitness));
+            bestResult.add(population.get(0).getFitness());
             for (int k = 0; k < 10; k++) {
                 System.out.println(population.get(k).getFitness());
             }
             System.out.println();
         }
-        String filePath = "data/output.txt";
-        bestSolution.writeChromosomeToFile(filePath, bestSolution.getChromosome());
+        String resultFilePath = "data/fitness.txt";
+        writeResultToFile(resultFilePath, bestResult);
+        String chromosomefilePath = "data/output.txt";
+        bestSolution.writeChromosomeToFile(chromosomefilePath, bestSolution.getChromosome());
+    }
+
+    private void writeResultToFile(String filePath, ArrayList<Double> bestResult) throws IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(filePath));
+        for (int i = 0; i < bestResult.size(); i++) {
+            String line = String.format("%f\n", bestResult.get(i));
+            writer.write(line);
+        }
+        writer.close();
     }
 
     public boolean readFunc() throws IOException {
@@ -141,6 +151,22 @@ public class Framework {
         for (int i = 0; i < eliteNumber; i++) {
             newPopulation.push(population.get(i));
         }
+//        int cnt = 0;
+//        for (int i = 0; i < numPopulation; i++) {
+//            if (i > 1 && population.get(i).getFitness() == population.get(i - 1).getFitness()) {
+//                continue;
+//            }
+//            cnt++;
+//            newPopulation.push(population.get(i));
+//            if (cnt >= eliteNumber) {
+//                break;
+//            }
+//        }
+//        while (cnt < eliteNumber) {
+//            int id = rand.nextInt(eliteNumber);
+//            newPopulation.push(population.get(id));
+//            cnt++;
+//        }
         return eliteNumber;
 
     }
@@ -193,10 +219,6 @@ public class Framework {
         newPopulation.drainTo(population);
     }
 
-    public void log() {
-
-    }
-
     private void readConfig(String configPath) throws IOException {
 
         //load stream
@@ -218,4 +240,5 @@ public class Framework {
 //        weights = Arrays.stream(prop.getProperty("objectives.weights").split(",")).mapToDouble(Double::parseDouble).toArray();
 
     }
+
 }

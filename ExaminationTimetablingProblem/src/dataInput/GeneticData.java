@@ -58,7 +58,7 @@ public class GeneticData {
         this.numberOfInvigilators = this.listInvigilators.size();
         this.numberOfSubjects = this.listSubjects.size();
         this.numberOfRooms = 100;
-        this.numberOfExaminationDays = 7;
+        this.numberOfExaminationDays = 9;
         this.maximumNumberStudentsEachRoom = 22;
         this.numberOfSlotsPerDay = 6;
 

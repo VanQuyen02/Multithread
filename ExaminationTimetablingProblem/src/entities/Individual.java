@@ -8,11 +8,9 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 import myThread.FitnessCalculateThread;
-import utils.DistributedRandom;
 import utils.DistributedRandom;
 
 public class Individual implements Comparable<Individual> {
@@ -231,8 +229,8 @@ public class Individual implements Comparable<Individual> {
             int[][] invigilatorTakeSlot = new int[getData.getNumberOfInvigilators()][getData.getNumberOfTotalSlots()];
             subjectHeldAtSlot = new int[getData.getNumberOfSubjects()][getData.getNumberOfTotalSlots()];
             slotStartOfSubject = new int[getData.getNumberOfSubjects()];
-//            DistributedRandom randomSlot = DistributedRandom.newDistributedRandomSlot(getData.numberOfTotalSlots, getData.numberOfRooms);
-            Random rand = new Random();
+            DistributedRandom randomSlot = DistributedRandom.newDistributedRandomSlot(getData.numberOfTotalSlots, getData.numberOfRooms);
+//            Random rand = new Random();
 
             for (int i = 0; i < getData.getNumberOfInvigilators(); i++) {
                 numberOfSlotScheduleInvigilator[i] = getData.getNumberOfSlotsRequiredForInvigilators()[i];
@@ -241,9 +239,9 @@ public class Individual implements Comparable<Individual> {
             for (int s = 0; s < getData.getNumberOfSubjects(); s++) {
 //                System.out.println("s: "+ s);
                 int sLength = getData.getLengthOfSubject()[s];
-                int[] haveChoosen = new int[getData.getNumberOfTotalSlots() - sLength];
-//                int t = randomSlot.getRandom();
-                int t = rand.nextInt(getData.getNumberOfTotalSlots() - sLength);
+                int[] haveChoosen = new int[getData.getNumberOfTotalSlots()];
+                int t = randomSlot.getRandom();
+//                int t = rand.nextInt(getData.getNumberOfTotalSlots() - sLength+1);
                 boolean flag = false;
                 while (true) {
                     int sum = 0;
@@ -251,7 +249,7 @@ public class Individual implements Comparable<Individual> {
                     for (int index = 0; index < haveChoosen.length; index++) {
                         sum += haveChoosen[index];
                     }
-                    if (sum == getData.getNumberOfTotalSlots() - sLength) {
+                    if (sum == getData.getNumberOfTotalSlots() - sLength + 1) {
                         flag = true;
                         break;
                     }
@@ -261,7 +259,8 @@ public class Individual implements Comparable<Individual> {
                             && checkRoomCapacityAtOneTime(chromosome, t, s, sLength)) {
                         break;
                     }
-                    t = rand.nextInt(getData.getNumberOfTotalSlots() - sLength);
+                    t = randomSlot.getRandom();
+//                    t = rand.nextInt(getData.getNumberOfTotalSlots() - sLength + 1);
                 }
                 if (flag == true) {
 //                    System.out.println("Can't choose t");
@@ -308,7 +307,7 @@ public class Individual implements Comparable<Individual> {
                         chromosome[s][eachSlot][currentInvigilator] = 1;
                         invigilatorTakeSlot[currentInvigilator][eachSlot] = 1;
                         subjectHeldAtSlot[s][eachSlot] = 1;
-//                        randomSlot.add(eachSlot, -1);
+                        randomSlot.add(eachSlot, -1);
                     }
 
                     randomInvigilator.delete(currentInvigilator);
@@ -427,17 +426,19 @@ public class Individual implements Comparable<Individual> {
 //        int[][][] chromosome = s.readChromosomeFromFile(filePath);
 ////        System.out.println(chromosome[1][30][259]);
 //        id.createChromosome();
-//        if (id.passAllConstraints()) {
-//            System.out.println("Chromosome passes all constraints.");
-//        } else {
-//            System.out.println("Chromosome does not pass all constraints.");
-//        }
         id.setChromosome(id.readChromosomeFromFile(filePath));
         id.generateInfo(id);
-        FitnessCalculateThread fc = new FitnessCalculateThread(id);
-        fc.setIndividual(id);
+        if (id.passAllConstraints()) {
+            System.out.println("Chromosome passes all constraints.");
+        } else {
+            System.out.println("Chromosome does not pass all constraints.");
+        }
+//        id.setChromosome(id.readChromosomeFromFile(filePath));
+//        id.generateInfo(id);
+//        FitnessCalculateThread fc = new FitnessCalculateThread(id);
+//        fc.setIndividual(id);
 //        fc.calculateFitess();
-        System.out.println(fc.calculateFitess());
+//        System.out.println(fc.calculateFitess());
         // System.out.println(data.invigilatorCanSuperviseSubject[274][4]);
 
     }
@@ -447,6 +448,7 @@ public class Individual implements Comparable<Individual> {
         createSubjectHeldAtSlot(ind);
         createSlotStartOfSubject(ind);
     }
+
     public void createSubjectHeldAtSlot(Individual ind) {
         int[][][] chromosome = ind.getChromosome();
         int[][] subjectHeldAtSlot = new int[ind.getData().getNumberOfSubjects()][ind.getData().getNumberOfTotalSlots()];
